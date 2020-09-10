@@ -7,8 +7,8 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/izumin5210/ro"
-	"github.com/izumin5210/ro/rq"
+	"github.com/alunir/ro"
+	"github.com/alunir/ro/rq"
 )
 
 type Post struct {

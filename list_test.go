@@ -6,9 +6,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/izumin5210/ro"
-	"github.com/izumin5210/ro/rq"
-	rotesting "github.com/izumin5210/ro/testing"
+	"github.com/alunir/ro"
+	"github.com/alunir/ro/rq"
+	rotesting "github.com/alunir/ro/testing"
 )
 
 func TestRedisStore_List(t *testing.T) {

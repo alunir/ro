@@ -11,7 +11,7 @@ import (
 )
 
 // Put implements the types.Store interface.
-func (s *redisStore) Put(ctx context.Context, src interface{}) error {
+func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 	conn, err := s.pool.GetContext(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to acquire a connection")
@@ -26,13 +26,13 @@ func (s *redisStore) Put(ctx context.Context, src interface{}) error {
 	rv := reflect.ValueOf(src)
 	if rv.Kind() == reflect.Slice {
 		for i := 0; i < rv.Len(); i++ {
-			err = s.set(conn, rv.Index(i))
+			err = s.set(conn, rv.Index(i), ttl)
 			if err != nil {
 				break
 			}
 		}
 	} else {
-		err = s.set(conn, rv)
+		err = s.set(conn, rv, ttl)
 	}
 
 	if err != nil {
@@ -47,7 +47,7 @@ func (s *redisStore) Put(ctx context.Context, src interface{}) error {
 	return nil
 }
 
-func (s *redisStore) set(conn redis.Conn, src reflect.Value) error {
+func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 	m, err := s.toModel(src)
 	if err != nil {
 		return errors.Wrap(err, "failed to convert to model")
@@ -63,6 +63,10 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value) error {
 		err = conn.Send("HMSET", redis.Args{}.Add(key).AddFlat(m)...)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send HMEST %s %v", key, m)
+		}
+		err = conn.Send("EXPIRE", key, ttl)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send EXPIRE %s %v", key, m)
 		}
 	}
 
@@ -85,6 +89,10 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to send ZADD %s %v %s", scoreSetKey, score, key)
 		}
+		err = conn.Send("EXPIRE", scoreSetKey, ttl)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send EXPIRE %s %v %s", scoreSetKey, score, key)
+		}
 		zsetKeys = append(zsetKeys, scoreSetKey)
 	}
 
@@ -92,6 +100,10 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value) error {
 	err = conn.Send("SADD", redis.Args{}.Add(scoreSetKeysKey).AddFlat(zsetKeys)...)
 	if err != nil {
 		return errors.Wrapf(err, "failed to send SADD %s %v", scoreSetKeysKey, zsetKeys)
+	}
+	err = conn.Send("EXPIRE", scoreSetKeysKey, ttl)
+	if err != nil {
+		return errors.Wrapf(err, "failed to send EXPIRE %s %v", scoreSetKeysKey, zsetKeys)
 	}
 
 	return nil

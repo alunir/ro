@@ -6,7 +6,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 
-	"github.com/izumin5210/ro/rq"
+	"github.com/alunir/ro/rq"
 )
 
 // Count implements the types.Store interface.

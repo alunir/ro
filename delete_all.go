@@ -5,7 +5,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/izumin5210/ro/rq"
+	"github.com/alunir/ro/rq"
 )
 
 // DeleteAll implements the types.Store interface.

@@ -3,7 +3,7 @@ package ro_test
 import (
 	"testing"
 
-	"github.com/izumin5210/ro"
+	"github.com/alunir/ro"
 )
 
 func Test_WithKeyPrefix(t *testing.T) {

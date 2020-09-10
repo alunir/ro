@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/izumin5210/ro/rq"
+	"github.com/alunir/ro/rq"
 )
 
 func TestQuery_Build(t *testing.T) {

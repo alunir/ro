@@ -7,8 +7,8 @@ import (
 
 	"github.com/gomodule/redigo/redis"
 
-	"github.com/izumin5210/ro"
-	rotesting "github.com/izumin5210/ro/testing"
+	"github.com/alunir/ro"
+	rotesting "github.com/alunir/ro/testing"
 )
 
 func TestRedisStore_Delete(t *testing.T) {

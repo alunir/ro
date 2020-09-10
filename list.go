@@ -7,7 +7,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 
-	"github.com/izumin5210/ro/rq"
+	"github.com/alunir/ro/rq"
 )
 
 // List implements the types.Store interface.

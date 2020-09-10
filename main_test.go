@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	rotesting "github.com/izumin5210/ro/testing"
+	rotesting "github.com/alunir/ro/testing"
 )
 
 var pool *rotesting.Pool

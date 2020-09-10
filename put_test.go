@@ -25,7 +25,7 @@ func TestRedisStore_Put(t *testing.T) {
 	}
 
 	store := ro.New(pool, &rotesting.Post{})
-	err := store.Put(context.TODO(), post)
+	err := store.Put(context.TODO(), post, 600)
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -60,7 +60,7 @@ func TestRedisStore_Put(t *testing.T) {
 		Title:     "post 1",
 		Body:      "This is a post 1.",
 		UpdatedAt: now.Add(-60 * 60 * 24 * time.Second).UnixNano(),
-	})
+	}, 600)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -104,7 +104,7 @@ func TestRedisStore_Put_WithMultipleItems(t *testing.T) {
 	}
 
 	store := ro.New(pool, &rotesting.Post{})
-	err := store.Put(context.TODO(), posts)
+	err := store.Put(context.TODO(), posts, 600)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -167,7 +167,7 @@ func TestRedisStore_Put_WhenDisableToStoreToHash(t *testing.T) {
 	}
 
 	store := ro.New(pool, &rotesting.Post{}, ro.WithHashStore(false))
-	err := store.Put(context.TODO(), post)
+	err := store.Put(context.TODO(), post, 600)
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
@@ -205,7 +205,7 @@ func TestRedisStore_Put_WhenKeySuffixIsEmpty(t *testing.T) {
 	store := ro.New(pool, &DummyWithEmptyKeySuffix{}, ro.WithHashStore(false))
 
 	dummy := &DummyWithEmptyKeySuffix{}
-	err := store.Put(context.TODO(), dummy)
+	err := store.Put(context.TODO(), dummy, 600)
 
 	if err == nil {
 		t.Error("Put() with an empty key suffix should return an error")
@@ -232,7 +232,7 @@ func (d *DummyWithNilScoreMap) GetScoreMap() map[string]interface{} { return nil
 func TestRedisStore_Put_WithScoreMapIsNil(t *testing.T) {
 	store := ro.New(pool, &DummyWithNilScoreMap{}, ro.WithHashStore(false))
 	dummy := &DummyWithNilScoreMap{}
-	err := store.Put(context.TODO(), dummy)
+	err := store.Put(context.TODO(), dummy, 600)
 
 	if err == nil {
 		t.Error("Put() with nil score map should return an error")
@@ -261,7 +261,7 @@ func (d *DummyWithEmptyScoreKey) GetScoreMap() map[string]interface{} {
 func TestRedisStore_Put_WithEmptyScoreKey(t *testing.T) {
 	store := ro.New(pool, &DummyWithEmptyScoreKey{}, ro.WithHashStore(false))
 	dummy := &DummyWithEmptyScoreKey{}
-	err := store.Put(context.TODO(), dummy)
+	err := store.Put(context.TODO(), dummy, 600)
 
 	if err == nil {
 		t.Error("Put() with empty score key should return an error")
@@ -290,7 +290,7 @@ func (d *DummyWithNotNumberScore) GetScoreMap() map[string]interface{} {
 func TestRedisStore_Put_WithNotNumberScore(t *testing.T) {
 	store := ro.New(pool, &DummyWithNotNumberScore{}, ro.WithHashStore(false))
 	dummy := &DummyWithNotNumberScore{}
-	err := store.Put(context.TODO(), dummy)
+	err := store.Put(context.TODO(), dummy, 600)
 
 	if err == nil {
 		t.Error("Put() with not number score should return an error")
@@ -319,7 +319,7 @@ func (d *DummyWithTooLargeScore) GetScoreMap() map[string]interface{} {
 func TestRedisStore_Put_WithTooLargeNumberScore(t *testing.T) {
 	store := ro.New(pool, &DummyWithTooLargeScore{}, ro.WithHashStore(false))
 	dummy := &DummyWithTooLargeScore{}
-	err := store.Put(context.TODO(), dummy)
+	err := store.Put(context.TODO(), dummy, 600)
 
 	if err == nil {
 		t.Error("Put() with not number score should return an error")
@@ -353,7 +353,7 @@ func (d *DummyWithStringNumberScore) GetScoreMap() map[string]interface{} {
 func TestRedisStore_Put_WithStringNumberScore(t *testing.T) {
 	store := ro.New(pool, &DummyWithStringNumberScore{}, ro.WithHashStore(false))
 	dummy := &DummyWithStringNumberScore{}
-	err := store.Put(context.TODO(), dummy)
+	err := store.Put(context.TODO(), dummy, 600)
 
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)

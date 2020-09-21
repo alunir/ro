@@ -30,9 +30,14 @@ func (s *redisStore) Delete(ctx context.Context, src interface{}) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to convert to model %v", rv.Interface())
 		}
-		key, err := s.getKey(m)
-		if err != nil {
-			return errors.Wrap(err, "failed to get key")
+		var key string
+		if s.HashStoreEnabled {
+			key, err = s.getKey(m)
+			if err != nil {
+				return errors.Wrap(err, "failed to get key")
+			}
+		} else if len(m.Serialized()) > 0 {
+			key = s.KeyPrefix
 		}
 		keys = append(keys, key)
 	}

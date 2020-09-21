@@ -13,7 +13,6 @@ import (
 type Store interface {
 	List(ctx context.Context, dest interface{}, mods ...rq.Modifier) error
 	Get(ctx context.Context, dests ...Model) error
-	GetAll(ctx context.Context, dest Model, mods ...rq.Modifier) error
 	Put(ctx context.Context, src interface{}, ttl int) error
 	Delete(ctx context.Context, src interface{}) error
 	DeleteAll(ctx context.Context, mods ...rq.Modifier) error

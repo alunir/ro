@@ -71,11 +71,11 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 			return errors.Wrapf(err, "failed to send EXPIRE %s %v", key, m)
 		}
 	} else if len(serialized) > 0 {
-		err = conn.Send("SET", key, serialized)
+		err = conn.Send("HSET", s.KeyPrefix, m.GetKeySuffix(), serialized)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send HSET %s %v", key, m)
 		}
-		err = conn.Send("EXPIRE", key, ttl)
+		err = conn.Send("EXPIRE", s.KeyPrefix, ttl)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send EXPIRE %s %v", key, m)
 		}

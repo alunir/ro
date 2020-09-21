@@ -32,10 +32,17 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 	}
 	defer conn.Close()
 
-	for _, key := range keys {
-		err := conn.Send("HGETALL", key)
+	if s.HashStoreEnabled {
+		for _, key := range keys {
+			err := conn.Send("HGETALL", key)
+			if err != nil {
+				return errors.Wrapf(err, "failed to send HGETALL %s", key)
+			}
+		}
+	} else if len(s.model.Serialized()) > 0 {
+		err := conn.Send("HGETALL", s.KeyPrefix)
 		if err != nil {
-			return errors.Wrapf(err, "failed to send HGETALL %s", key)
+			return errors.Wrapf(err, "faild to send HGETALL %s", s.KeyPrefix)
 		}
 	}
 

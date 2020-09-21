@@ -24,3 +24,8 @@ func (p *Post) GetScoreMap() map[string]interface{} {
 		"recent": p.UpdatedAt,
 	}
 }
+
+// Serialized implements the types.Model interface
+func (p *Post) Serialized() []byte {
+	return []byte{}
+}

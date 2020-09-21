@@ -59,10 +59,21 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		return errors.Wrap(err, "failed to get key")
 	}
 
+	serialized := m.Serialized()
+
 	if s.HashStoreEnabled {
 		err = conn.Send("HMSET", redis.Args{}.Add(key).AddFlat(m)...)
 		if err != nil {
-			return errors.Wrapf(err, "failed to send HMEST %s %v", key, m)
+			return errors.Wrapf(err, "failed to send HMSET %s %v", key, m)
+		}
+		err = conn.Send("EXPIRE", key, ttl)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send EXPIRE %s %v", key, m)
+		}
+	} else if len(serialized) > 0 {
+		err = conn.Send("SET", key, serialized)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send HSET %s %v", key, m)
 		}
 		err = conn.Send("EXPIRE", key, ttl)
 		if err != nil {

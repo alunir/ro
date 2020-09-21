@@ -4,4 +4,5 @@ package ro
 type Model interface {
 	GetKeySuffix() string
 	GetScoreMap() map[string]interface{}
+	Serialized() []byte
 }

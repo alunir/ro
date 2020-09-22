@@ -21,10 +21,10 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		return errors.New("must pass a slice ptr")
 	}
 
-	keys, err := s.selectKeys(ctx, mods)
-	if err != nil {
-		return errors.Wrap(err, "failed to select query")
-	}
+	// keys, err := s.selectKeys(ctx, mods)
+	// if err != nil {
+	// 	return errors.Wrap(err, "failed to select query")
+	// }
 
 	conn, err := s.pool.GetContext(ctx)
 	if err != nil {
@@ -32,7 +32,18 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 	}
 	defer conn.Close()
 
+	var keys []string
 	if s.HashStoreEnabled {
+		cmd, err := s.injectKeyPrefix(rq.List(mods...)).Build()
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		keys, err = redis.Strings(conn.Do(cmd.Name, cmd.Args...))
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
 		for _, key := range keys {
 			err := conn.Send("HGETALL", key)
 			if err != nil {
@@ -40,9 +51,19 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 			}
 		}
 	} else if len(s.model.Serialized()) > 0 {
-		err := conn.Send("HGETALL", s.KeyPrefix)
+		cmd, err := rq.List(mods...).Build()
 		if err != nil {
-			return errors.Wrapf(err, "faild to send HGETALL %s", s.KeyPrefix)
+			return errors.WithStack(err)
+		}
+
+		keys, err = redis.Strings(conn.Do(cmd.Name, cmd.Args...))
+		if err != nil {
+			return errors.WithStack(err)
+		}
+
+		err = conn.Send("HMGET", s.KeyPrefix, keys)
+		if err != nil {
+			return errors.Wrapf(err, "faild to send HMGET %s %s", s.KeyPrefix, keys)
 		}
 	}
 

@@ -23,8 +23,8 @@ func (s *redisStore) getScoreSetKey(key string) string {
 	return s.KeyPrefix + s.ScoreKeyDelimiter + key
 }
 
-func (s *redisStore) getScoreSetKeysKeyByKey(key string) string {
-	return key + s.KeyDelimiter + s.ScoreSetKeysKeySuffix
+func (s *redisStore) getScoreSetKeysKeyByKey() string {
+	return s.KeyPrefix + s.KeyDelimiter + s.ScoreSetKeysKeySuffix
 }
 
 func (s *redisStore) toModel(rv reflect.Value) (Model, error) {

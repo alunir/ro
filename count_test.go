@@ -50,7 +50,7 @@ func TestRedisStore_Count(t *testing.T) {
 	}
 
 	for _, p := range posts {
-		err := store.Put(context.TODO(), p)
+		err := store.Put(context.TODO(), p, 600)
 
 		if err != nil {
 			t.Fatalf("Unexpected error: %v", err)

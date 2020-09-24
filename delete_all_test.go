@@ -49,7 +49,7 @@ func TestRedisStore_DeleteAll(t *testing.T) {
 	}
 
 	store := ro.New(pool, &rotesting.Post{})
-	err := store.Put(context.TODO(), posts)
+	err := store.Put(context.TODO(), posts, 600)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}

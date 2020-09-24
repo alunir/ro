@@ -53,15 +53,12 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		return errors.Wrap(err, "failed to convert to model")
 	}
 
-	key, err := s.getKey(m)
-
-	if err != nil {
-		return errors.Wrap(err, "failed to get key")
-	}
-
-	serialized := m.Serialized()
-
+	var key string
 	if s.HashStoreEnabled {
+		key, err = s.getKey(m)
+		if err != nil {
+			return errors.Wrap(err, "failed to get key")
+		}
 		err = conn.Send("HMSET", redis.Args{}.Add(key).AddFlat(m)...)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send HMSET %s %v", key, m)
@@ -70,9 +67,12 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		if err != nil {
 			return errors.Wrapf(err, "failed to send EXPIRE %s %v", key, m)
 		}
-	} else if len(serialized) > 0 {
-		key = s.KeyPrefix
-		err = conn.Send("HSET", s.KeyPrefix, m.GetKeySuffix(), serialized)
+	} else {
+		key = m.GetKeySuffix()
+		if len(m.Serialized()) == 0 {
+			return errors.Errorf("failed to implement Serialized %s %v", key, m)
+		}
+		err = conn.Send("HSET", s.KeyPrefix, m.GetKeySuffix(), m.Serialized())
 		if err != nil {
 			return errors.Wrapf(err, "failed to send HSET %s %s", key, m.GetKeySuffix())
 		}
@@ -108,7 +108,7 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		zsetKeys = append(zsetKeys, scoreSetKey)
 	}
 
-	scoreSetKeysKey := s.getScoreSetKeysKeyByKey(key)
+	scoreSetKeysKey := s.getScoreSetKeysKeyByKey()
 	err = conn.Send("SADD", redis.Args{}.Add(scoreSetKeysKey).AddFlat(zsetKeys)...)
 	if err != nil {
 		return errors.Wrapf(err, "failed to send SADD %s %v", scoreSetKeysKey, zsetKeys)

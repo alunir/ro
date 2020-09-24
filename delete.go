@@ -57,9 +57,9 @@ func (s *redisStore) deleteByKeys(ctx context.Context, keys []string) error {
 
 	keysByZsetKey := map[string][]string{}
 	for _, k := range keys {
-		zsetKeys, err := redis.Strings(conn.Do("SMEMBERS", s.getScoreSetKeysKeyByKey(k)))
+		zsetKeys, err := redis.Strings(conn.Do("SMEMBERS", s.getScoreSetKeysKeyByKey()))
 		if err != nil {
-			return errors.Wrapf(err, "failed to execute SMEMBERS %s", s.getScoreSetKeysKeyByKey(k))
+			return errors.Wrapf(err, "failed to execute SMEMBERS %s", s.getScoreSetKeysKeyByKey())
 		}
 		for _, zk := range zsetKeys {
 			keysByZsetKey[zk] = append(keysByZsetKey[zk], k)

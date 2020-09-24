@@ -9,43 +9,20 @@ import (
 
 	"github.com/alunir/ro"
 	"github.com/alunir/ro/rq"
+	rotesting "github.com/alunir/ro/testing"
 )
-
-type Post struct {
-	ro.Model
-	ID        uint64 `redis:"id"`
-	UserID    uint64 `redis:"user_id"`
-	Title     string `redis:"title"`
-	Body      string `redis:"body"`
-	CreatedAt int64  `redis:"created_at"`
-}
-
-func (p *Post) GetKeySuffix() string {
-	return fmt.Sprint(p.ID)
-}
-
-func (p *Post) GetScoreMap() map[string]interface{} {
-	return map[string]interface{}{
-		"recent":                         p.CreatedAt,
-		fmt.Sprintf("user:%d", p.UserID): p.CreatedAt,
-	}
-}
-
-func (p *Post) Serialized() []byte { return []byte{} }
 
 // Setup and cleanup
 // ----------------------------------------------------------------
-
-var (
-	postStore ro.Store
-	now       time.Time
+const (
+	POST_SERIALIZED_KEY = "POST_SERIALIZED"
 )
 
-func setup() {
+func setup_serialized() {
 	now = time.Now()
-	postStore = ro.New(pool, &Post{})
+	postStore = ro.New(pool, &rotesting.Post_Serialized{}, ro.WithHashStore(false), ro.WithKeyPrefix(POST_SERIALIZED_KEY))
 
-	postStore.Put(context.TODO(), []*Post{
+	postStore.Put(context.TODO(), []*rotesting.Post_Serialized{
 		{
 			ID:        1,
 			UserID:    1,
@@ -77,18 +54,14 @@ func setup() {
 	}, 600)
 }
 
-func cleanup() {
-	pool.Cleanup()
-}
-
 // Examples
 // ----------------------------------------------------------------
 
-func Example_Store_Set() {
+func Example_Store_Set_Serialized() {
 	defer cleanup()
-	postStore = ro.New(pool, &Post{})
+	postStore = ro.New(pool, &rotesting.Post_Serialized{}, ro.WithHashStore(false), ro.WithKeyPrefix(POST_SERIALIZED_KEY))
 
-	postStore.Put(context.TODO(), []*Post{
+	postStore.Put(context.TODO(), []*rotesting.Post_Serialized{
 		{
 			ID:        1,
 			UserID:    1,
@@ -108,37 +81,54 @@ func Example_Store_Set() {
 	conn := pool.Get()
 	defer conn.Close()
 
-	keys, _ := redis.Strings(conn.Do("ZRANGE", "Post/user:1", 0, -1))
-	fmt.Println(keys)
-	for _, k := range keys {
-		post := &Post{}
-		v, _ := redis.Values(conn.Do("HGETALL", k))
-		redis.ScanStruct(v, post)
-		fmt.Println(post.Body)
-	}
+	// tbl_keys, _ := redis.Strings(conn.Do("KEYS", "*"))
+	// fmt.Printf("tbl_keys: %v\n", tbl_keys)
+	// s3, _ := redis.Strings(conn.Do("HMGET", "POST_SERIALIZED", "2", "1"))
+	// fmt.Println(s3)
 
+	keys, _ := redis.Strings(conn.Do("ZRANGE", POST_SERIALIZED_KEY+"/user:1", 0, -1))
+	args := []interface{}{POST_SERIALIZED_KEY}
+	for _, k := range keys {
+		args = append(args, k)
+	}
+	vv, _ := redis.Values(conn.Do("HMGET", args...))
+	for _, v := range vv {
+		p := &rotesting.Post_Serialized{}
+		p.Deserialized(v.([]byte))
+		fmt.Println(p.Body)
+	}
 	// Output:
-	// [Post:2 Post:1]
 	// This is a post 2
 	// This is a post 1
 }
 
-func Example_Store_Get() {
-	setup()
+func Example_Store_Get_Serialized() {
+	setup_serialized()
 	defer cleanup()
 
-	post := &Post{ID: 1}
+	post := &rotesting.Post_Serialized{ID: 1}
 	postStore.Get(context.TODO(), post)
 	fmt.Println(post.Body)
 	// Output:
 	// This is a post 1
 }
 
-func Example_Store_List() {
-	setup()
+func Example_Store_List_Serialized() {
+	setup_serialized()
 	defer cleanup()
 
-	posts := []*Post{}
+	conn := pool.Get()
+	defer conn.Close()
+	// keys, _ := redis.Strings(conn.Do("KEYS", "*"))
+	// fmt.Println(keys)
+	// s2, _ := redis.Strings(conn.Do("ZREVRANGEBYSCORE", "POST_SERIALIZED/recent", "+inf", time.Now().UnixNano()))
+	// fmt.Println(s2)
+	// s, _ := redis.Strings(conn.Do("HGETALL", "POST_SERIALIZED"))
+	// fmt.Println(s)
+	// s3, _ := redis.Strings(conn.Do("HMGET", "POST_SERIALIZED", "3", "1"))
+	// fmt.Println(s3)
+
+	var posts []rotesting.Post_Serialized
 	postStore.List(context.TODO(), &posts, rq.Key("recent"), rq.GtEq(now.UnixNano()), rq.Reverse())
 	fmt.Println(posts[0].Body)
 	fmt.Println(posts[1].Body)
@@ -147,8 +137,8 @@ func Example_Store_List() {
 	// This is a post 1
 }
 
-func Example_Store_Count() {
-	setup()
+func Example_Store_Count_Serialized() {
+	setup_serialized()
 	defer cleanup()
 
 	cnt, _ := postStore.Count(context.TODO(), rq.Key("user", 1), rq.LtEq(now.UnixNano()))

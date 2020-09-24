@@ -36,7 +36,7 @@ func TestRedisStore_Delete(t *testing.T) {
 	}
 
 	store := ro.New(pool, &rotesting.Post{})
-	err := store.Put(context.TODO(), posts)
+	err := store.Put(context.TODO(), posts, 600)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -99,7 +99,7 @@ func TestRedisStore_Delete_WithMultipleItems(t *testing.T) {
 	}
 
 	store := ro.New(pool, &rotesting.Post{})
-	err := store.Put(context.TODO(), posts)
+	err := store.Put(context.TODO(), posts, 600)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}
@@ -169,8 +169,8 @@ func TestRedisStore_Remove_WhenDisableToStoreToHash(t *testing.T) {
 		},
 	}
 
-	store := ro.New(pool, &rotesting.Post{}, ro.WithHashStore(false))
-	err := store.Put(context.TODO(), posts)
+	store := ro.New(pool, &rotesting.Post{})
+	err := store.Put(context.TODO(), posts, 600)
 	if err != nil {
 		t.Errorf("Unexpected error: %v", err)
 	}

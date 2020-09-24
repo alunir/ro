@@ -18,8 +18,9 @@ require (
 	github.com/opencontainers/runc v0.1.1 // indirect
 	github.com/ory/dockertest v3.3.5+incompatible // indirect
 	github.com/pkg/errors v0.8.1
+	github.com/stretchr/testify v1.4.0
 	golang.org/x/net v0.0.0-20200904194848-62affa334b73 // indirect
-	golang.org/x/sys v0.0.0-20200909081042-eff7692f9009 // indirect
+	golang.org/x/sys v0.0.0-20200826173525-f9321e4c35a6 // indirect
 	gopkg.in/ory-am/dockertest.v3 v3.3.2
 	gotest.tools v2.2.0+incompatible // indirect
 )

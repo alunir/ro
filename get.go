@@ -17,9 +17,14 @@ func (s *redisStore) Get(ctx context.Context, dests ...Model) error {
 	keys := make([]string, len(dests), len(dests))
 
 	for i, m := range dests {
-		key, err := s.getKey(m)
-		if err != nil {
-			return errors.Wrap(err, "failed to get key")
+		var key string
+		if s.HashStoreEnabled {
+			key, err = s.getKey(m)
+			if err != nil {
+				return errors.Wrap(err, "failed to get key")
+			}
+		} else if len(m.Serialized()) > 0 {
+			key = s.KeyPrefix
 		}
 		keys[i] = key
 		err = conn.Send("HGETALL", key)
@@ -38,9 +43,24 @@ func (s *redisStore) Get(ctx context.Context, dests ...Model) error {
 		if err != nil {
 			return errors.Wrap(err, "faild to receive or cast redis command result")
 		}
-		err = redis.ScanStruct(v, d)
-		if err != nil {
-			return errors.Wrapf(err, "faild to scan struct %s %x", keys[i], v)
+		if s.HashStoreEnabled {
+			err = redis.ScanStruct(v, d)
+			if err != nil {
+				return errors.Wrapf(err, "faild to scan struct %s %x", keys[i], v)
+			}
+		} else {
+			var key string
+			for j, vv := range v {
+				if len(d.Serialized()) == 0 {
+					return errors.Errorf("failed to implement Serialized %v", d)
+				}
+				if j%2 == 0 {
+					key = string(vv.([]byte))
+					continue
+				} else if key == d.GetKeySuffix() {
+					d.Deserialized(vv.([]byte))
+				}
+			}
 		}
 	}
 

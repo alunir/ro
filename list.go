@@ -21,67 +21,75 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		return errors.New("must pass a slice ptr")
 	}
 
-	// keys, err := s.selectKeys(ctx, mods)
-	// if err != nil {
-	// 	return errors.Wrap(err, "failed to select query")
-	// }
-
 	conn, err := s.pool.GetContext(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
 
-	var keys []string
+	keys, err := s.selectKeys(ctx, mods)
+	if err != nil {
+		return errors.Wrap(err, "failed to select query")
+	}
+
 	if s.HashStoreEnabled {
-		cmd, err := s.injectKeyPrefix(rq.List(mods...)).Build()
-		if err != nil {
-			return errors.WithStack(err)
-		}
-
-		keys, err = redis.Strings(conn.Do(cmd.Name, cmd.Args...))
-		if err != nil {
-			return errors.WithStack(err)
-		}
-
 		for _, key := range keys {
 			err := conn.Send("HGETALL", key)
 			if err != nil {
 				return errors.Wrapf(err, "failed to send HGETALL %s", key)
 			}
 		}
-	} else if len(s.model.Serialized()) > 0 {
-		cmd, err := rq.List(mods...).Build()
-		if err != nil {
-			return errors.WithStack(err)
+	} else {
+		if len(s.model.Serialized()) == 0 {
+			return errors.Errorf("failed to implement Serialized %v", dest)
 		}
 
-		keys, err = redis.Strings(conn.Do(cmd.Name, cmd.Args...))
-		if err != nil {
-			return errors.WithStack(err)
+		args := []interface{}{s.KeyPrefix}
+		for _, k := range keys {
+			args = append(args, k)
 		}
-
-		err = conn.Send("HMGET", s.KeyPrefix, keys)
+		err = conn.Send("HMGET", args...)
 		if err != nil {
 			return errors.Wrapf(err, "faild to send HMGET %s %s", s.KeyPrefix, keys)
 		}
 	}
 
-	conn.Flush()
+	err = conn.Flush()
+	if err != nil {
+		return errors.Wrapf(err, "faild to FLUSH")
+	}
 
-	vt := dt.Type().Elem().Elem()
-
-	for _, key := range keys {
+	if s.HashStoreEnabled {
+		vt := dt.Type().Elem().Elem()
+		for _, key := range keys {
+			v, err := redis.Values(conn.Receive())
+			if err != nil {
+				return errors.Wrap(err, "faild to receive or cast redis command result")
+			}
+			vv := reflect.New(vt)
+			err = redis.ScanStruct(v, vv.Interface())
+			if err != nil {
+				return errors.Wrapf(err, "faild to scan struct %s %x", key, v)
+			}
+			dt.Set(reflect.Append(dt, vv))
+		}
+	} else {
+		vt := dt.Type().Elem()
 		v, err := redis.Values(conn.Receive())
 		if err != nil {
 			return errors.Wrap(err, "faild to receive or cast redis command result")
 		}
-		vv := reflect.New(vt)
-		err = redis.ScanStruct(v, vv.Interface())
-		if err != nil {
-			return errors.Wrapf(err, "faild to scan struct %s %x", key, v)
+		// vv := reflect.New(vt)
+		// err = redis.ScanSlice(v, vv.Interface())
+		// vv.MethodByName("Deserialized").Call(v)
+		// dt.Set(reflect.Append(dt, vv))
+		// dt.Set(reflect.Append(dt, vv.MethodByName("Deserialized").Call()))
+
+		for _, w := range v {
+			vv := reflect.New(vt)
+			vv.MethodByName("Deserialized").Call([]reflect.Value{reflect.ValueOf(w)})
+			dt.Set(reflect.Append(dt, vv.Elem()))
 		}
-		dt.Set(reflect.Append(dt, vv))
 	}
 
 	return nil

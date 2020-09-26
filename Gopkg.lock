@@ -166,21 +166,3 @@
   pruneopts = ""
   revision = "d0be0721c37eeb5299f245a996a483160fc36940"
 
-[[projects]]
-  digest = "1:fbef214fe15bb267e947cd09bd054d50e5d4e690829de671590e8706e84cfd4c"
-  name = "gopkg.in/ory-am/dockertest.v3"
-  packages = ["."]
-  pruneopts = ""
-  revision = "9f1141b78507d23603f6be530587664ebb63a8d2"
-  version = "v3.3.2"
-
-[solve-meta]
-  analyzer-name = "dep"
-  analyzer-version = 1
-  input-imports = [
-    "github.com/gomodule/redigo/redis",
-    "github.com/pkg/errors",
-    "gopkg.in/ory-am/dockertest.v3",
-  ]
-  solver-name = "gps-cdcl"
-  solver-version = 1

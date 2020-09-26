@@ -33,6 +33,8 @@ func (p *Post) GetScoreMap() map[string]interface{} {
 
 func (p *Post) Serialized() []byte { return []byte{} }
 
+func (p *Post) Deserialized(b []byte) {}
+
 // Setup and cleanup
 // ----------------------------------------------------------------
 

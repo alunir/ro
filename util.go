@@ -1,7 +1,6 @@
 package ro
 
 import (
-	"context"
 	"fmt"
 	"reflect"
 
@@ -44,13 +43,7 @@ func (s *redisStore) toModel(rv reflect.Value) (Model, error) {
 	return m, nil
 }
 
-func (s *redisStore) selectKeys(ctx context.Context, mods []rq.Modifier) ([]string, error) {
-	conn, err := s.pool.GetContext(ctx)
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to acquire a connection")
-	}
-	defer conn.Close()
-
+func (s *redisStore) selectKeys(conn redis.Conn, mods []rq.Modifier) ([]string, error) {
 	cmd, err := s.injectKeyPrefix(rq.List(mods...)).Build()
 	if err != nil {
 		return nil, errors.WithStack(err)

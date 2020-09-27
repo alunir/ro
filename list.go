@@ -21,16 +21,16 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		return errors.New("must pass a slice ptr")
 	}
 
-	keys, err := s.selectKeys(ctx, mods)
-	if err != nil {
-		return errors.Wrap(err, "failed to select query")
-	}
-
 	conn, err := s.pool.GetContext(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
+
+	keys, err := s.selectKeys(conn, mods)
+	if err != nil {
+		return errors.Wrap(err, "failed to select query")
+	}
 
 	if s.HashStoreEnabled {
 		for _, key := range keys {

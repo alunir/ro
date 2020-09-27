@@ -10,7 +10,13 @@ import (
 
 // DeleteAll implements the types.Store interface.
 func (s *redisStore) DeleteAll(ctx context.Context, mods ...rq.Modifier) error {
-	keys, err := s.selectKeys(ctx, mods)
+	conn, err := s.pool.GetContext(ctx)
+	if err != nil {
+		return errors.Wrap(err, "failed to acquire a connection")
+	}
+	defer conn.Close()
+
+	keys, err := s.selectKeys(conn, mods)
 	if err != nil {
 		return errors.WithStack(err)
 	}

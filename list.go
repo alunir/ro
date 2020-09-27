@@ -32,6 +32,10 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		return errors.Wrap(err, "failed to select query")
 	}
 
+	if len(keys) == 0 {
+		return errors.Errorf("there is matched no keys")
+	}
+
 	if s.HashStoreEnabled {
 		for _, key := range keys {
 			err := conn.Send("HGETALL", key)

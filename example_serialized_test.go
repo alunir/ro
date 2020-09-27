@@ -106,11 +106,25 @@ func Example_Store_Get_Serialized() {
 	setup_serialized()
 	defer cleanup()
 
-	post := &rotesting.Post_Serialized{ID: 1}
+	post := &rotesting.Post_Serialized{ID: 4}
 	postStore.Get(context.TODO(), post)
 	fmt.Println(post.Body)
 	// Output:
+	// This is a post 4
+}
+
+func Example_Store_MultiGet_Serialized() {
+	setup_serialized()
+	defer cleanup()
+
+	post1 := &rotesting.Post_Serialized{ID: 1}
+	post3 := &rotesting.Post_Serialized{ID: 3}
+	postStore.Get(context.TODO(), post1, post3)
+	fmt.Println(post1.Body)
+	fmt.Println(post3.Body)
+	// Output:
 	// This is a post 1
+	// This is a post 3
 }
 
 func Example_Store_List_Serialized() {

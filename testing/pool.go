@@ -6,7 +6,7 @@ import (
 	"log"
 
 	"github.com/gomodule/redigo/redis"
-	dockertest "github.com/ory/dockertest"
+	dockertest "github.com/ory/dockertest/v3"
 )
 
 // Pool contains dockertest and redis connection pool

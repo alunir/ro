@@ -79,13 +79,10 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		if err != nil {
 			return errors.Wrap(err, "faild to receive or cast redis command result")
 		}
-		// vv := reflect.New(vt)
-		// err = redis.ScanSlice(v, vv.Interface())
-		// vv.MethodByName("Deserialized").Call(v)
-		// dt.Set(reflect.Append(dt, vv))
-		// dt.Set(reflect.Append(dt, vv.MethodByName("Deserialized").Call()))
-
 		for _, w := range v {
+			if w == nil {
+				continue
+			}
 			vv := reflect.New(vt)
 			vv.MethodByName("Deserialized").Call([]reflect.Value{reflect.ValueOf(w)})
 			dt.Set(reflect.Append(dt, vv.Elem()))

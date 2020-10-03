@@ -2,6 +2,7 @@ package ro
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 
 	"github.com/gomodule/redigo/redis"
@@ -81,7 +82,7 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		vt := dt.Type().Elem()
 		v, err := redis.Values(conn.Receive())
 		if err != nil {
-			return errors.Wrap(err, "faild to receive or cast redis command result")
+			return errors.Wrap(err, fmt.Sprintf("faild to receive or cast redis command result. keys: %v", keys))
 		}
 		for _, w := range v {
 			if w == nil {

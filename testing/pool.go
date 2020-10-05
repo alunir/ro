@@ -26,7 +26,7 @@ func MustCreate() *Pool {
 		log.Fatalf("could not connect to docker: %s", err)
 	}
 
-	p.dockerRes, err = p.dockerPool.Run("redis", "4.0.2-alpine", nil)
+	p.dockerRes, err = p.dockerPool.Run("redis", "5.0", nil)
 	if err != nil {
 		log.Fatalf("could not start resource: %s", err)
 	}

@@ -207,8 +207,9 @@ func (d *DummyWithEmptyKeySuffix) GetKeySuffix() string { return "" }
 func (d *DummyWithEmptyKeySuffix) GetScoreMap() map[string]interface{} {
 	return map[string]interface{}{}
 }
-func (d *DummyWithEmptyKeySuffix) Serialized() []byte  { return []byte{} }
-func (d *DummyWithEmptyKeySuffix) Deserialized([]byte) {}
+func (d *DummyWithEmptyKeySuffix) Serialized() []byte    { return []byte{} }
+func (d *DummyWithEmptyKeySuffix) Deserialized([]byte)   {}
+func (d *DummyWithEmptyKeySuffix) GetDatabaseNo() string { return "0" }
 
 func TestRedisStore_Put_WhenKeySuffixIsEmpty(t *testing.T) {
 	store := ro.New(pool, &DummyWithEmptyKeySuffix{})
@@ -239,6 +240,7 @@ func (d *DummyWithNilScoreMap) GetKeySuffix() string                { return "te
 func (d *DummyWithNilScoreMap) GetScoreMap() map[string]interface{} { return nil }
 func (d *DummyWithNilScoreMap) Serialized() []byte                  { return []byte{} }
 func (d *DummyWithNilScoreMap) Deserialized(b []byte)               {}
+func (d *DummyWithNilScoreMap) GetDatabaseNo() string               { return "0" }
 
 func TestRedisStore_Put_WithScoreMapIsNil(t *testing.T) {
 	store := ro.New(pool, &DummyWithNilScoreMap{})
@@ -270,6 +272,7 @@ func (d *DummyWithEmptyScoreKey) GetScoreMap() map[string]interface{} {
 }
 func (d *DummyWithEmptyScoreKey) Serialized() []byte    { return []byte{} }
 func (d *DummyWithEmptyScoreKey) Deserialized(b []byte) {}
+func (d *DummyWithEmptyScoreKey) GetDatabaseNo() string { return "0" }
 
 func TestRedisStore_Put_WithEmptyScoreKey(t *testing.T) {
 	store := ro.New(pool, &DummyWithEmptyScoreKey{})
@@ -301,6 +304,7 @@ func (d *DummyWithNotNumberScore) GetScoreMap() map[string]interface{} {
 }
 func (d *DummyWithNotNumberScore) Serialized() []byte    { return []byte{} }
 func (d *DummyWithNotNumberScore) Deserialized(b []byte) {}
+func (d *DummyWithNotNumberScore) GetDatabaseNo() string { return "0" }
 
 func TestRedisStore_Put_WithNotNumberScore(t *testing.T) {
 	store := ro.New(pool, &DummyWithNotNumberScore{})
@@ -332,6 +336,7 @@ func (d *DummyWithTooLargeScore) GetScoreMap() map[string]interface{} {
 }
 func (d *DummyWithTooLargeScore) Serialized() []byte    { return []byte{} }
 func (d *DummyWithTooLargeScore) Deserialized(b []byte) {}
+func (d *DummyWithTooLargeScore) GetDatabaseNo() string { return "0" }
 
 func TestRedisStore_Put_WithTooLargeNumberScore(t *testing.T) {
 	store := ro.New(pool, &DummyWithTooLargeScore{})
@@ -368,6 +373,7 @@ func (d *DummyWithStringNumberScore) GetScoreMap() map[string]interface{} {
 }
 func (d *DummyWithStringNumberScore) Serialized() []byte    { return []byte{} }
 func (d *DummyWithStringNumberScore) Deserialized(b []byte) {}
+func (d *DummyWithStringNumberScore) GetDatabaseNo() string { return "0" }
 
 // TODO: fix it.
 

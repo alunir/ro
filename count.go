@@ -16,6 +16,7 @@ func (s *redisStore) Count(ctx context.Context, mods ...rq.Modifier) (int, error
 		return 0, errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
+	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	cmd, err := s.injectKeyPrefix(rq.Count(mods...)).Build()
 	if err != nil {

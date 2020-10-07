@@ -35,6 +35,8 @@ func (p *Post) Serialized() []byte { return []byte{} }
 
 func (p *Post) Deserialized(b []byte) {}
 
+func (p *Post) GetDatabaseNo() string { return "0" }
+
 // Setup and cleanup
 // ----------------------------------------------------------------
 

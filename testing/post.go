@@ -37,6 +37,8 @@ func (p *Post) Serialized() []byte {
 // Deserialized implements the types.Model interface
 func (p *Post) Deserialized(b []byte) {}
 
+func (p *Post) GetDatabaseNo() string { return "0" }
+
 type Post_Serialized struct {
 	ro.Model
 	ID        uint64 `redis:"id"`
@@ -72,3 +74,5 @@ func (p *Post_Serialized) Deserialized(b []byte) {
 		panic("Failed to Deserialized. " + err.Error())
 	}
 }
+
+func (p *Post_Serialized) GetDatabaseNo() string { return "0" }

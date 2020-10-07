@@ -54,6 +54,8 @@ func (s *redisStore) deleteByKeys(ctx context.Context, keys []string) error {
 	if err != nil {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
+	defer conn.Close()
+	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	keysByZsetKey := map[string][]string{}
 	for _, k := range keys {

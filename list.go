@@ -27,6 +27,7 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
+	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	keys, err := s.selectKeys(conn, mods)
 	if err != nil {

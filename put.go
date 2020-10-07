@@ -17,6 +17,7 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
+	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	err = conn.Send("MULTI")
 	if err != nil {

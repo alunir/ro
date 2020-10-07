@@ -15,6 +15,7 @@ func (s *redisStore) DeleteAll(ctx context.Context, mods ...rq.Modifier) error {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
+	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	keys, err := s.selectKeys(conn, mods)
 	if err != nil {

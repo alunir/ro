@@ -13,6 +13,7 @@ func (s *redisStore) Get(ctx context.Context, dests ...Model) error {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
+	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	keys := make([]string, len(dests), len(dests))
 

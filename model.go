@@ -6,4 +6,5 @@ type Model interface {
 	GetScoreMap() map[string]interface{}
 	Serialized() []byte
 	Deserialized([]byte)
+	GetDatabaseNo() string
 }

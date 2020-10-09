@@ -18,6 +18,11 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 	}
 	defer conn.Close()
 
+	// err = conn.Send("WATCH", key)
+	// if err != nil {
+	// 	return errors.Wrapf(err, "failed to send WATCH %s", key)
+	// }
+
 	err = conn.Send("MULTI")
 	if err != nil {
 		return errors.Wrap(err, "faild to send MULTI command")
@@ -64,10 +69,6 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to get key")
 		}
-		err = conn.Send("WATCH", key)
-		if err != nil {
-			return errors.Wrapf(err, "failed to send WATCH %s", key)
-		}
 		err = conn.Send("HMSET", redis.Args{}.Add(key).AddFlat(m)...)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send HMSET %s %v", key, m)
@@ -78,10 +79,6 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		}
 	} else {
 		key = m.GetKeySuffix()
-		err = conn.Send("WATCH", key)
-		if err != nil {
-			return errors.Wrapf(err, "failed to send WATCH %s", key)
-		}
 		if len(m.Serialized()) == 0 {
 			return errors.Errorf("failed to implement Serialized %s %v", key, m)
 		}

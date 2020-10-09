@@ -18,10 +18,14 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 	}
 	defer conn.Close()
 
-	// err = conn.Send("WATCH", key)
-	// if err != nil {
-	// 	return errors.Wrapf(err, "failed to send WATCH %s", key)
-	// }
+	// TODO: watch all key if s.HashStoreEnabled
+	if !s.HashStoreEnabled {
+		key := s.KeyPrefix
+		err = conn.Send("WATCH", key)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send WATCH %s", key)
+		}
+	}
 
 	err = conn.Send("MULTI")
 	if err != nil {

@@ -17,12 +17,13 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 		return errors.Wrap(err, "failed to acquire a connection")
 	}
 	defer conn.Close()
-	conn.Do("SELECT", s.model.GetDatabaseNo())
 
 	err = conn.Send("MULTI")
 	if err != nil {
 		return errors.Wrap(err, "faild to send MULTI command")
 	}
+
+	conn.Send("SELECT", s.model.GetDatabaseNo())
 
 	rv := reflect.ValueOf(src)
 	if rv.Kind() == reflect.Slice {
@@ -41,9 +42,12 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 		return errors.Wrap(err, "faild to send any commands")
 	}
 
-	_, err = conn.Do("EXEC")
+	r, err := redis.Values(conn.Do("EXEC"))
 	if err != nil {
 		return errors.Wrap(err, "faild to EXEC commands")
+	}
+	if r[0] != "OK" {
+		return errors.Wrap(err, "return FAILED after EXEC commands")
 	}
 	return nil
 }
@@ -60,6 +64,10 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		if err != nil {
 			return errors.Wrap(err, "failed to get key")
 		}
+		err = conn.Send("WATCH", key)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send WATCH %s", key)
+		}
 		err = conn.Send("HMSET", redis.Args{}.Add(key).AddFlat(m)...)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send HMSET %s %v", key, m)
@@ -70,6 +78,10 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 		}
 	} else {
 		key = m.GetKeySuffix()
+		err = conn.Send("WATCH", key)
+		if err != nil {
+			return errors.Wrapf(err, "failed to send WATCH %s", key)
+		}
 		if len(m.Serialized()) == 0 {
 			return errors.Errorf("failed to implement Serialized %s %v", key, m)
 		}

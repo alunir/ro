@@ -12,6 +12,10 @@ import (
 
 // Put implements the types.Store interface.
 func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
+	if ttl == 0 {
+		return errors.New("ttl is zero")
+	}
+
 	conn, err := s.pool.GetContext(ctx)
 	if err != nil {
 		return errors.Wrap(err, "failed to acquire a connection")
@@ -21,7 +25,7 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 	// TODO: watch all key if s.HashStoreEnabled
 	if !s.HashStoreEnabled {
 		key := s.KeyPrefix
-		err = conn.Send("WATCH", key)
+		err = conn.Do("WATCH", key)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send WATCH %s", key)
 		}

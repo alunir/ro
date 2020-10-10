@@ -151,6 +151,20 @@ func Example_Store_List_Serialized() {
 	// This is a post 1
 }
 
+func Example_Store_Delete_Serialized() {
+	setup_serialized()
+	defer cleanup()
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	var posts []rotesting.Post_Serialized
+	postStore.DeleteAll(context.TODO(), rq.Key("recent"))
+	fmt.Println(posts)
+	// Output:
+	// []
+}
+
 func Example_Store_Count_Serialized() {
 	setup_serialized()
 	defer cleanup()

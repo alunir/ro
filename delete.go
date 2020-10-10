@@ -74,9 +74,20 @@ func (s *redisStore) deleteByKeys(ctx context.Context, keys []string) error {
 	}
 
 	if len(keys) > 0 {
-		err = conn.Send("DEL", redis.Args{}.AddFlat(keys)...)
-		if err != nil {
-			return errors.Wrapf(err, "faild to send DEL %v", keys)
+		if s.HashStoreEnabled {
+			err = conn.Send("DEL", redis.Args{}.AddFlat(keys)...)
+			if err != nil {
+				return errors.Wrapf(err, "faild to send DEL %v", keys)
+			}
+		} else {
+			args := []interface{}{s.KeyPrefix}
+			for _, k := range keys {
+				args = append(args, k)
+			}
+			err = conn.Send("HDEL", redis.Args{}.AddFlat(args)...)
+			if err != nil {
+				return errors.Wrapf(err, "faild to send HDEL %v", keys)
+			}
 		}
 	}
 

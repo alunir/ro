@@ -25,7 +25,7 @@ func (s *redisStore) Put(ctx context.Context, src interface{}, ttl int) error {
 	// TODO: watch all key if s.HashStoreEnabled
 	if !s.HashStoreEnabled {
 		key := s.KeyPrefix
-		err = conn.Do("WATCH", key)
+		_, err = conn.Do("WATCH", key)
 		if err != nil {
 			return errors.Wrapf(err, "failed to send WATCH %s", key)
 		}

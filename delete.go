@@ -37,7 +37,7 @@ func (s *redisStore) Delete(ctx context.Context, src interface{}) error {
 				return errors.Wrap(err, "failed to get key")
 			}
 		} else if len(m.Serialized()) > 0 {
-			key = s.KeyPrefix
+			key = m.GetKeySuffix()
 		}
 		keys = append(keys, key)
 	}

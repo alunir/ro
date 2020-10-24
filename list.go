@@ -35,7 +35,7 @@ func (s *redisStore) List(ctx context.Context, dest interface{}, mods ...rq.Modi
 	}
 
 	if len(keys) == 0 {
-		return errors.New("there is matched no keys")
+		return nil
 	}
 
 	if s.HashStoreEnabled {

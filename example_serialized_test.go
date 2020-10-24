@@ -151,6 +151,17 @@ func Example_Store_List_Serialized() {
 	// This is a post 1
 }
 
+func Example_Store_List_Empty_Serialized() {
+	postStore := ro.New(pool, &rotesting.Post_Serialized{}, ro.WithHashStore(false), ro.WithKeyPrefix(POST_SERIALIZED_KEY))
+	defer cleanup()
+
+	var posts []rotesting.Post_Serialized
+	postStore.List(context.TODO(), &posts, rq.Key("recent"), rq.GtEq(now.UnixNano()), rq.Reverse())
+	fmt.Println(len(posts))
+	// Output:
+	// 0
+}
+
 func Example_Store_Delete_Serialized() {
 	setup_serialized()
 	defer cleanup()

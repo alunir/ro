@@ -103,6 +103,8 @@ func (s *redisStore) set(conn redis.Conn, src reflect.Value, ttl int) error {
 	scoreMap := m.GetScoreMap()
 	if scoreMap == nil {
 		return errors.Errorf("%s's GetScoreMap() should be present", key)
+	} else if len(scoreMap) == 0 {
+		return nil
 	}
 
 	zsetKeys := make([]string, 0, len(scoreMap))
